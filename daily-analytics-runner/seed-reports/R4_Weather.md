@@ -1,9 +1,19 @@
 ```json
-{ "key": "R4_Weather", "title": "Report 4: Weather & Disruptions", "enabled": true,
-  "recipients": ["sam@gashley.com"],
-  "sources": ["shopify","watchtower","prior","calendar"] }
+{
+  "key": "R4_Weather",
+  "title": "Report 4: Weather & Disruptions",
+  "enabled": true,
+  "recipients": [
+    "sreiman@gashley.com",
+    "robregon@gashley.com",
+    "ppierce@gashley.com",
+    "kgaskins@gashley.com",
+    "dnguyen@gashley.com",
+    "kgaub@gashley.com",
+    "ashleyplanning&allocation@ashleystewart.com",
+    "sam@gashley.com",
+    "sgupta@gashley.com"
+  ]
+}
 ```
-Generate Report 1 per Daily_Operation.md R1 Part A locked template: source status line ->
-LESSONS & FOLLOW-UP block -> yesterday official table (net/demand/margin/conv vs plan & LY) ->
-promo performance per send -> promo calendar assessment (RED changes, >=1 working day lead) ->
-Night Owl overnight line (during test) -> SOURCE MANIFEST footer. QA block at the end.
+Generate per R4 locked template: 3 days forward (D1/D2 verified, D3 directional); weather + events/closures/sports; EVERY item cites its source; store actions RED with decision deadlines -> QA block.
