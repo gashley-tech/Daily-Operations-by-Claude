@@ -38,3 +38,9 @@ Seed definitions for the current five reports are in seed-reports/ — upload th
 Uses Railway's Gmail integration: set GMAIL_USER and GMAIL_APP_PASSWORD. Every report is
 emailed to its own recipients (from its definition file) AND saved to Dropbox /Daily/YYYY-MM-DD/
 along with the run log. Reports are saved to Dropbox and attached to email as TRUE richly formatted .docx binaries (html-to-docx conversion) — no .doc workaround; the API pipeline has no text-only limitation.
+
+## Versioning
+Bump the VERSION file with every code change (semver: capability=minor, fix=patch).
+The runner stamps VERSION + the Railway git SHA (RAILWAY_GIT_COMMIT_SHA, auto-provided)
+into: the dashboard header, /health, every run log, and every confirmation email —
+so each morning's reports declare exactly which code produced them.

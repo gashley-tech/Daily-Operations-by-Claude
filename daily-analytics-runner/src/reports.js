@@ -45,4 +45,14 @@ async function loadReportDefinitions() {
   const dow = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'][new Date().getDay()];
   return defs.filter(d => d.enabled !== false && (!d.schedule_days || d.schedule_days.includes(dow)));
 }
-module.exports = { loadReportDefinitions, dbx };
+async function loadAllDefinitions() {
+  const files = await dbxList('/agent.skill/reports');
+  const defs = [];
+  for (const f of files) {
+    const text = await dbx(`/agent.skill/reports/${f}`);
+    const m = text && text.match(/```json\s*([\s\S]*?)```/);
+    if (m) { try { defs.push(JSON.parse(m[1])); } catch(_){} }
+  }
+  return defs;
+}
+module.exports = { loadReportDefinitions, loadAllDefinitions, dbx };

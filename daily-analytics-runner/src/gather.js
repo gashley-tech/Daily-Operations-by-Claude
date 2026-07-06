@@ -46,6 +46,7 @@ async function gatherAll() {
   // TODO (IT-6): mailbox feeds (Hourly Order Counts, KPI PDF, POS) via MS Graph once app credentials exist.
   const weatherCompact = await haikuShape('NWS alerts feed (keep only alerts for NJ PA NY MD GA IL MI OH VA NC TX FL store states)', weather);
   const priorReports = await dropboxRead(`/Daily/${y}/Daily_Reports_${y}_ALL.md`);
-  return { today, agentFile, calendar, watchtower, weatherCompact, dayClose, categories, priorReports };
+  const teamFeedback = await dropboxRead('/Feedback/Feedback_CURRENT.md') || '(no team feedback yet)';
+  return { today, agentFile, calendar, watchtower, weatherCompact, dayClose, categories, priorReports, teamFeedback };
 }
 module.exports = { gatherAll };
