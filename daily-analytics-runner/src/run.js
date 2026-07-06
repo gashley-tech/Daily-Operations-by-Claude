@@ -16,8 +16,7 @@ async function dropboxSave(path, content) {
 async function runMorning(onlyKeys) {
   const log = { started: new Date().toISOString(), steps: [] };
   try {
-    let defs = await loadReportDefinitions();
-    if (Array.isArray(onlyKeys)) defs = defs.filter(d => onlyKeys.includes(d.key));
+    let defs = await loadReportDefinitions(); if (Array.isArray(onlyKeys)) defs = defs.filter(d => onlyKeys.includes(d.key));
     log.steps.push({ definitions: defs.map(d => d.key) });
     const ctx = await gatherAll(); log.steps.push('gathered');
     const { reports, usage } = await generateReports(ctx, defs);

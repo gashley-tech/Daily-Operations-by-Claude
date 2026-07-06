@@ -1,1 +1,5 @@
-{"schedules":[{"name":"morning-full","cron":"0 10 * * *","timezone":"America/New_York","enabled":true,"reports":"all"},{"name":"afternoon-check","cron":"0 18 * * *","timezone":"America/New_York","enabled":false,"reports":["R1_Shopify"]},{"name":"monday-reorders","cron":"30 10 * * 1","timezone":"America/New_York","enabled":false,"reports":["R6_Reorders"]}]}
+{ "schedules": [
+  { "name": "morning-full",     "cron": "0 10 * * *",  "timezone": "America/New_York", "enabled": true,  "reports": "all" },
+  { "name": "afternoon-check",  "cron": "0 18 * * *",  "timezone": "America/New_York", "enabled": false, "reports": ["R1_Shopify"] },
+  { "name": "monday-reorders",  "cron": "30 10 * * 1", "timezone": "America/New_York", "enabled": false, "reports": ["R6_Reorders"] }
+] }

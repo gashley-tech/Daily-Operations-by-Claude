@@ -7,7 +7,7 @@ const { runMorning } = require('./run');
 
 const app = express(); app.use(express.json());
 const SCHED = 'config/schedule.json';
-let task = null;
+let tasks = [];
 
 const guard = (req, res, next) => {
   const c = auth(req);
@@ -17,10 +17,14 @@ const guard = (req, res, next) => {
 };
 const readSched = () => JSON.parse(fs.readFileSync(SCHED, 'utf8'));
 function register() {
-  if (task) task.stop();
-  const s = readSched();
-  if (s.enabled) task = cron.schedule(s.cron, () => runMorning(), { timezone: s.timezone });
-  console.log('schedule:', s);
+  tasks.forEach(t => t.stop()); tasks = [];
+  const cfg = readSched();
+  for (const s of cfg.schedules || []) {
+    if (!s.enabled) continue;
+    const only = s.reports === 'all' ? undefined : s.reports;
+    tasks.push(cron.schedule(s.cron, () => runMorning(only), { timezone: s.timezone }));
+  }
+  console.log('registered', tasks.length, 'schedules');
 }
 
 app.get('/', guard, (req, res) => {
@@ -37,9 +41,9 @@ app.get('/', guard, (req, res) => {
   </body></html>`);
 });
 app.use(express.urlencoded({ extended: true }));
-app.post('/schedule', guard, (req, res) => {
-  const s = readSched(); s.cron = req.body.cron; s.enabled = req.body.enabled === 'true';
-  fs.writeFileSync(SCHED, JSON.stringify(s, null, 2)); register(); res.redirect('/');
+app.post('/schedule', guard, (req, res) => {   // body: full schedules JSON from the dashboard editor
+  fs.writeFileSync(SCHED, JSON.stringify({ schedules: JSON.parse(req.body.schedules) }, null, 2));
+  register(); res.redirect('/');
 });
 app.post('/run-now', guard, async (req, res) => { runMorning(); res.redirect('/'); });
 app.get('/health', (req, res) => res.send('ok'));
@@ -75,4 +79,36 @@ app.post('/recipients/add', guard, async (req, res) => {
 app.post('/recipients/remove', guard, async (req, res) => {
   await dbxDefRW(req.body.key, r => r.filter(x => x !== req.body.email));
   res.redirect('/');
+});
+
+// ---- credential test panel: /test (basic-auth protected) ----
+app.get('/test', guard, async (req, res) => {
+  const out = {};
+  try {
+    const Anthropic = require('@anthropic-ai/sdk');
+    const a = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
+    const t0 = Date.now();
+    const m = await a.messages.create({ model: require('../config/models.json').gather,
+      max_tokens: 5, messages: [{ role: 'user', content: 'Say ok' }] });
+    out.anthropic = { ok: true, model: m.model, latency_ms: Date.now() - t0, usage: m.usage };
+  } catch (e) { out.anthropic = { ok: false, error: e.message }; }
+  try {
+    const r = await fetch('https://content.dropboxapi.com/2/files/download', {
+      method: 'POST', headers: { Authorization: `Bearer ${process.env.DROPBOX_TOKEN}`,
+        'Dropbox-API-Arg': JSON.stringify({ path: `${process.env.DROPBOX_BASE}/agent.skill/Daily_Operation.md` }) } });
+    out.dropbox = { ok: r.ok, found_daily_operation_md: r.ok };
+  } catch (e) { out.dropbox = { ok: false, error: e.message }; }
+  try {
+    const r = await fetch(`https://${process.env.SHOPIFY_STORE}/admin/api/2025-01/graphql.json`, {
+      method: 'POST', headers: { 'X-Shopify-Access-Token': process.env.SHOPIFY_TOKEN,
+        'Content-Type': 'application/json' }, body: JSON.stringify({ query: '{ shop { name } }' }) });
+    const j = await r.json(); out.shopify = { ok: !!j.data, shop: j.data && j.data.shop && j.data.shop.name };
+  } catch (e) { out.shopify = { ok: false, error: e.message }; }
+  try {
+    const nodemailer = require('nodemailer');
+    await nodemailer.createTransport({ service: 'gmail',
+      auth: { user: process.env.GMAIL_USER, pass: process.env.GMAIL_APP_PASSWORD } }).verify();
+    out.gmail = { ok: true, user: process.env.GMAIL_USER };
+  } catch (e) { out.gmail = { ok: false, error: e.message }; }
+  res.json(out);
 });
