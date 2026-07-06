@@ -1,5 +1,5 @@
 { "schedules": [
-  { "name": "morning-full",     "cron": "0 10 * * *",  "timezone": "America/New_York", "enabled": true,  "reports": "all" },
-  { "name": "afternoon-check",  "cron": "0 18 * * *",  "timezone": "America/New_York", "enabled": false, "reports": ["R1_Shopify"] },
-  { "name": "monday-reorders",  "cron": "30 10 * * 1", "timezone": "America/New_York", "enabled": false, "reports": ["R6_Reorders"] }
+  { "name": "morning-7am",   "time": "07:00", "days": "*", "cron": "0 7 * * *",   "timezone": "America/New_York", "enabled": true, "reports": ["R1_Shopify","R2_Stores","R3_Returns","R4_Weather","R5_Messaging"] },
+  { "name": "afternoon-330", "time": "15:30", "days": "*", "cron": "30 15 * * *", "timezone": "America/New_York", "enabled": true, "reports": ["R1_Shopify","R2_Stores","R5_Messaging"] },
+  { "name": "monday-reorders","time": "10:00","days": "1", "cron": "0 10 * * 1",  "timezone": "America/New_York", "enabled": true, "reports": ["R6_Reorders"] }
 ] }
