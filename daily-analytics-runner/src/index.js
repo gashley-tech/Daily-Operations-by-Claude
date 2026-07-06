@@ -171,12 +171,14 @@ app.get('/test', guard, async (req, res) => {
       max_tokens: 5, messages: [{ role: 'user', content: 'Say ok' }] });
     out.anthropic = { ok: true, model: m.model, latency_ms: Date.now() - t0, usage: m.usage };
   } catch (e) { out.anthropic = { ok: false, error: e.message }; }
-  try {
-    const r = await fetch('https://content.dropboxapi.com/2/files/download', {
-      method: 'POST', headers: { Authorization: `Bearer ${process.env.DROPBOX_TOKEN}`,
-        'Dropbox-API-Arg': JSON.stringify({ path: `${process.env.DROPBOX_BASE}/agent.skill/Daily_Operation.md` }) } });
-    out.dropbox = { ok: r.ok, found_daily_operation_md: r.ok };
-  } catch (e) { out.dropbox = { ok: false, error: e.message }; }
+      try {
+      const dbxPath = `${process.env.DROPBOX_BASE}/agent.skill/Daily_Operation.md`;
+      const r = await fetch('https://content.dropboxapi.com/2/files/download', {
+        method: 'POST', headers: { Authorization: `Bearer ${process.env.DROPBOX_TOKEN}`,
+          'Dropbox-API-Arg': JSON.stringify({ path: dbxPath }) } });
+      const dbxBody = r.ok ? null : await r.text();
+      out.dropbox = { ok: r.ok, found_daily_operation_md: r.ok, path: dbxPath, status: r.status, error: dbxBody };
+    } catch (e) { out.dropbox = { ok: false, error: e.message }; }
   try {
     const r = await fetch(`https://${process.env.SHOPIFY_STORE}/admin/api/2025-01/graphql.json`, {
       method: 'POST', headers: { 'X-Shopify-Access-Token': process.env.SHOPIFY_TOKEN,
