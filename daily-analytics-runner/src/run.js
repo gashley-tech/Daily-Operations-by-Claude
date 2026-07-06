@@ -13,10 +13,11 @@ async function dropboxSave(path, content) {
     body: content });
 }
 
-async function runMorning() {
+async function runMorning(onlyKeys) {
   const log = { started: new Date().toISOString(), steps: [] };
   try {
-    const defs = await loadReportDefinitions();
+    let defs = await loadReportDefinitions();
+    if (Array.isArray(onlyKeys)) defs = defs.filter(d => onlyKeys.includes(d.key));
     log.steps.push({ definitions: defs.map(d => d.key) });
     const ctx = await gatherAll(); log.steps.push('gathered');
     const { reports, usage } = await generateReports(ctx, defs);
