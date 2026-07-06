@@ -112,3 +112,36 @@ app.get('/test', guard, async (req, res) => {
   } catch (e) { out.gmail = { ok: false, error: e.message }; }
   res.json(out);
 });
+
+// ---- ONE-TIME Shopify OAuth token capture (delete or ignore after use) ----
+// New vars needed temporarily: SHOPIFY_CLIENT_ID, SHOPIFY_CLIENT_SECRET (from Dev Dashboard)
+app.get('/shopify/auth', guard, (req, res) => {
+  const redirect = `https://${req.get('host')}/shopify/callback`;
+  const url = `https://${process.env.SHOPIFY_STORE}/admin/oauth/authorize` +
+    `?client_id=${process.env.SHOPIFY_CLIENT_ID}` +
+    `&scope=read_orders,read_products,read_analytics` +
+    `&redirect_uri=${encodeURIComponent(redirect)}`;
+  res.redirect(url);
+});
+
+app.get('/shopify/callback', async (req, res) => {
+  try {
+    const r = await fetch(`https://${process.env.SHOPIFY_STORE}/admin/oauth/access_token`, {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        client_id: process.env.SHOPIFY_CLIENT_ID,
+        client_secret: process.env.SHOPIFY_CLIENT_SECRET,
+        code: req.query.code })
+    });
+    const j = await r.json();
+    if (!j.access_token) return res.status(500).send('Exchange failed: ' + JSON.stringify(j));
+    console.log('SHOPIFY_TOKEN (copy from Railway logs):', j.access_token);
+    res.send(`<div style="font-family:Arial;max-width:600px;margin:60px auto">
+      <h2>Token captured</h2>
+      <p>Copy this into Railway Variables as <b>SHOPIFY_TOKEN</b>, then redeploy:</p>
+      <pre style="background:#f5f5f5;padding:14px;word-break:break-all">${j.access_token}</pre>
+      <p style="color:#64748B;font-size:13px">Scopes: ${j.scope}. This is an offline token, it does not expire
+      unless the app is uninstalled or reinstalled. You can now remove the /shopify routes or leave them,
+      since /shopify/auth is behind your dashboard login.</p></div>`);
+  } catch (e) { res.status(500).send(e.message); }
+});
