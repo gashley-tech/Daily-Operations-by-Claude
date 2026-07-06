@@ -1,0 +1,2 @@
+{ "cron": "0 10 * * *", "timezone": "America/New_York", "enabled": true,
+  "note": "10:00 UTC = 6:00 AM EDT. Editable from the dashboard." }
