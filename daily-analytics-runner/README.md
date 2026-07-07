@@ -4,6 +4,9 @@ GitHub -> Railway service: gathers morning sources, generates the 5 daily report
 each report per config/recipients.json, archives to Dropbox /Daily/YYYY-MM-DD/, and exposes a
 basic-auth dashboard (schedule editor + run-now + logs).
 
+## Recent changes
+2026-07-07: Added WATCHTOWER_URL (https://promo.gashley.com/api/summary) as a Railway variable on the Daily-Operations-by-Claude service. gather.js already read process.env.WATCHTOWER_URL with no auth required, but the variable was never set, so every run silently caught a fetch error and reports showed a "(watchtower error: ...)" placeholder instead of real promo data. No code change needed -- the endpoint is intentionally public/unauthenticated.
+
 ## Deploy (Railway)
 1. Push this repo to github.com/gashley-tech/daily-analytics-runner
 2. Railway -> New Project -> Deploy from GitHub repo
